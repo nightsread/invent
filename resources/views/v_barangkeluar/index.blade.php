@@ -1,39 +1,33 @@
 @extends('layouts.adm-main')
 
 @section('content')
-    <div class="container">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-body">
-                        <a href="{{ route('barangkeluar.create') }}" class="btn btn-md btn-success mb-3">+ TAMBAH BARANG KELUAR</a>
-
-                    <!-- Tambahkan pesan warning -->
-                @if(session('warning'))
-                    <div class="alert alert-warning">
-                        {{ session('warning') }}
-                    </div>
-                @endif
-
-                <!-- Tambahkan pesan sukses -->
-                @if(session('success'))
-                    <div class="alert alert-success">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                <div class="row mb-3">
-                <div class="col-md-6 ml-auto">
-                    <form action="{{ route('barangkeluar.index') }}" method="GET">
-                        <div class="input-group">
-                            <input type="text" name="search" class="form-control" placeholder="Search for ..." value="{{ request()->query('search') }}">
-                            <div class="input-group-append">
-                                <button type="submit" class="btn btn-outline-secondary">Search</button>
-                            </div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row mb-3 justify-content-between">
+                        <div class="col-md-6">
+                            <a href="{{ route('barangkeluar.create') }}" class="btn btn-md btn-success">+ TAMBAH BARANG KELUAR</a>
                         </div>
-                    </form>
-                </div>
-            </div>
+                        <div class="col-md-6">
+                            <form action="{{ route('barangkeluar.index') }}" method="GET">
+                                <div class="input-group">
+                                    <input type="text" name="search" class="form-control" placeholder="Search for ..." value="{{ request()->query('search') }}">
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-outline-secondary">Search</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    @if(session('success'))
+                        <div class="alert alert-success">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
 
                 <table class="table table-bordered">
                     <thead>
@@ -65,7 +59,7 @@
                             </tr>
                             @empty
                             <div class="alert">
-                                Data Barang Keluar belum tersedia
+                                Item not found
                             </div>
                             @endforelse
                     </tbody>

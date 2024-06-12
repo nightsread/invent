@@ -1,38 +1,39 @@
 @extends('layouts.adm-main')
 
 @section('content')
-    <div class="container">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-body">
-                        <a href="{{ route('kategori.create') }}" class="btn btn-md btn-success mb-3">+ TAMBAH KATEGORI</a>
-
-            @if(session('Success'))
-                <div class="alert alert-success">
-                    {{ session('Success') }}
-                </div>
-            @endif
-
-            @if(session('Gagal'))
-                <div class="alert alert-danger">
-                    {{ session('Gagal') }}
-                </div>
-            @endif
-
-            <div class="row mb-3">
-                <div class="col-md-6 ml-auto">
-                    <form action="{{ route('kategori.index') }}" method="GET">
-                        <div class="input-group">
-                            <input type="text" name="search" class="form-control" placeholder="Search for ..." value="{{ request()->query('search') }}">
-                            <div class="input-group-append">
-                                <button type="submit" class="btn btn-outline-secondary">Search</button>
-                            </div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row mb-3 justify-content-between">
+                        <div class="col-md-6">
+                            <a href="{{ route('kategori.create') }}" class="btn btn-md btn-success">+ TAMBAH KATEGORI</a>
                         </div>
-                    </form>
-                </div>
-            </div>
-                        
+                        <div class="col-md-6">
+                            <form action="{{ route('kategori.index') }}" method="GET">
+                                <div class="input-group">
+                                    <input type="text" name="search" class="form-control" placeholder="Search for ..." value="{{ request()->query('search') }}">
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-outline-secondary">Search</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    @if(session('Success'))
+                        <div class="alert alert-success">
+                            {{ session('Success') }}
+                        </div>
+                    @endif
+
+                    @if(session('Gagal'))
+                        <div class="alert alert-danger">
+                            {{ session('Gagal') }}
+                        </div>
+                    @endif
+
                 <table class="table table-bordered">
                     <thead>
                         <tr>

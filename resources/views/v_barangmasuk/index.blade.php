@@ -1,32 +1,33 @@
 @extends('layouts.adm-main')
 
 @section('content')
-    <div class="container">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-body">
-                        <a href="{{ route('barangmasuk.create') }}" class="btn btn-md btn-success mb-3">+ TAMBAH BARANG MASUK</a>
-
-            @if(session('success'))
-                <div class="alert alert-success">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            <div class="row mb-3">
-                <div class="col-md-6 ml-auto">
-                    <form action="{{ route('barangmasuk.index') }}" method="GET">
-                        <div class="input-group">
-                            <input type="text" name="search" class="form-control" placeholder="Search for ..." value="{{ request()->query('search') }}">
-                            <div class="input-group-append">
-                                <button type="submit" class="btn btn-outline-secondary">Search</button>
-                            </div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row mb-3 justify-content-between">
+                        <div class="col-md-6">
+                            <a href="{{ route('barangmasuk.create') }}" class="btn btn-md btn-success">+ TAMBAH BARANG MASUK</a>
                         </div>
-                    </form>
-                </div>
-            </div>
+                        <div class="col-md-6">
+                            <form action="{{ route('barangmasuk.index') }}" method="GET">
+                                <div class="input-group">
+                                    <input type="text" name="search" class="form-control" placeholder="Search for ..." value="{{ request()->query('search') }}">
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-outline-secondary">Search</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
 
+                    @if(session('success'))
+                        <div class="alert alert-success">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+                    
                 <table class="table table-bordered">
                     <thead>
                         <tr>
