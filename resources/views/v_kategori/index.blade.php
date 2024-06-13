@@ -12,6 +12,7 @@
                         </div>
                         <div class="col-md-6">
                             <form action="{{ route('kategori.index') }}" method="GET">
+                            @csrf
                                 <div class="input-group">
                                     <input type="text" name="search" class="form-control" placeholder="Search for ..." value="{{ request()->query('search') }}">
                                     <div class="input-group-append">
