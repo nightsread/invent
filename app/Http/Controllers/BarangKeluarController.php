@@ -7,6 +7,7 @@ use App\Models\Barang;
 use App\Models\BarangMasuk;
 use App\Models\BarangKeluar;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class BarangKeluarController extends Controller
 {
@@ -15,21 +16,24 @@ class BarangKeluarController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->query('search');
-        if ($search) {
-            $barangKeluar = BarangKeluar::where('tgl_keluar', 'like', '%' . $search . '%')
-                                    ->orWhere('qty_keluar', 'like', '%' . $search . '%')
-                                    ->orWhere('barang_id', 'like', '%' . $search . '%')
-                                    ->orWhereHas('barang', function($query) use ($search) {
-                                        $query->where('merk', 'like', '%' . $search . '%');
-                                    })
-                                    ->paginate(10);
-        } else {
-            $barangKeluar = BarangKeluar::paginate(10);
-        }
+        $query = DB::table('barangkeluar')
+        ->join('barang', 'barangkeluar.barang_id', '=', 'barang.id')
+        ->select('barangkeluar.*', 'barang.merk', 'barang.seri', 'barang.spesifikasi');
 
-        return view('v_barangkeluar.index', compact('barangKeluar'));
-    }
+        if ($request->has('search')) {
+            $searchTerm = $request->search;
+            $query->where(function ($query) use ($searchTerm) {
+                $query->where('barangkeluar.tgl_keluar', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('barangkeluar.qty_keluar', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('barang.merk', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('barang.seri', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('barang.spesifikasi', 'like', '%' . $searchTerm . '%');
+            });
+        }
+        
+        $barangKeluar = $query->paginate(10);
+
+        return view('v_barangkeluar.index', compact('barangKeluar'));    }
 
     /**
      * Show the form for creating a new resource.
@@ -45,36 +49,53 @@ class BarangKeluarController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'tgl_keluar'   => 'required|date',
-            'qty_keluar'   => 'required|numeric|min:0',
+            'qty_keluar'   => [
+                'required',
+                'integer',
+                'min:0',
+                function ($attribute, $value, $fail) use ($request) {
+                    $barang = Barang::findOrFail($request->barang_id);
+                    $stok_barang = $barang->stok;
+
+                    if ($value > $stok_barang) {
+                        $fail("Quantity must not exceed ($stok_barang) stock!");
+                    }
+                },
+            ],
             'barang_id'    => 'required|exists:barang,id',
         ]);
-
-        $tgl_keluar = $request->tgl_keluar;
-        $barang_id = $request->barang_id;
-
-        $beforeBMasuk = BarangMasuk::where('barang_id', $barang_id)
-        ->where('tgl_masuk', '>', $tgl_keluar)
-        ->exists();
+    
+        // Check if the exit date is before any entry date of the item
+        $beforeBMasuk = BarangMasuk::where('barang_id', $validatedData['barang_id'])
+            ->where('tgl_masuk', '>', $validatedData['tgl_keluar'])
+            ->exists();
+        
         if ($beforeBMasuk) {
             return redirect()->back()->withInput()->withErrors(['tgl_keluar' => 'The exit date cannot be before the entry date!']);
         }
-        
-        $barang = Barang::find($request->barang_id);
-        if ($request->qty_keluar > $barang->stok) {
-            return redirect()->back()->withInput()->withErrors(['qty_keluar' => 'The quantity exceeds existing stock items!']);
+    
+        try {
+            DB::beginTransaction(); 
+    
+            DB::table('barangkeluar')->insert([
+                'tgl_keluar' => $validatedData['tgl_keluar'],
+                'qty_keluar' => $validatedData['qty_keluar'],
+                'barang_id' => $validatedData['barang_id'],
+            ]);
+    
+            DB::commit();
+        } catch (\Exception $e) {
+            report($e);
+    
+            DB::rollBack(); 
+            return redirect()->back()->withErrors(['error' => 'An error occurred while saving the data']);
         }
-
-        BarangKeluar::create([
-            'tgl_keluar' => $request->tgl_keluar,
-            'qty_keluar' => $request->qty_keluar,
-            'barang_id' => $request->barang_id
-        ]);
-
+    
         return redirect()->route('barangkeluar.index')->with(['success' => 'Successfully saved!']);
     }
-
+    
     /**
      * Display the specified resource.
      */

@@ -47,7 +47,7 @@
                                 <td>{{ $row->id }}</td>
                                 <td>{{ $row->tgl_keluar }}</td>
                                 <td>{{ $row->qty_keluar }}</td>
-                                <td>{{ $row->barang_id }} - {{ $row->barang->merk }}</td>
+                                <td>{{ $row->merk }}</td>
                                 <td class="text-center">
                                     <form onsubmit="return confirm('Want to delete this field?');" action="{{ route('barangkeluar.destroy', $row->id) }}" method="POST">
                                         <a href="{{ route('barangkeluar.show', $row->id) }}" class="btn btn-sm btn-dark"><i class="fa fa-eye"></i></a>
@@ -65,7 +65,7 @@
                             @endforelse
                     </tbody>
                 </table>
-                {{-- {{ $barangkeluar->links() }} --}}
+                {{-- {{ $barangkeluar->links('pagination::bootstrap-4') }} --}}
                 </div>
                 </div>
 

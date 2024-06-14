@@ -12,25 +12,30 @@ class KategoriController extends Controller
 {
     public function index(Request $request)
     {
+        // $searchTerm = '%' . $request->input('search', '') . '%';
+
+        $DBKategori = DB::select('CALL getKategori("kategori")');
+    
+        $kategoriMapFromDB = collect($DBKategori)->map(function ($item) {
+            return (array) $item;
+        })->pluck('deskripsi', 'id')->toArray();
+    
+        $query = DB::table('kategori')->select('id', 'deskripsi', 'kategori');
+    
         if ($request->search) {
-            $searchTerm = '%' . $request->search . '%';
-    
-            $rsetKategori = DB::table('kategori')
-                ->select('id', 'deskripsi', 'kategori', DB::raw('kategori as kat'))
-                ->where('id', 'like', $searchTerm)
-                ->orWhere('deskripsi', 'like', $searchTerm)
-                ->orWhere('kategori', 'like', $searchTerm)
-                ->get();  // Menambahkan get() untuk mengeksekusi query
-    
-            return view('v_kategori.index', compact('rsetKategori'));
-        } else {
-            // Jika tidak ada pencarian, Anda mungkin ingin mengembalikan semua data atau data default
-            $rsetKategori = DB::table('kategori')->get();
-    
-            return view('v_kategori.index', compact('rsetKategori'));
+            $query->where('id', 'like', '%' . $request->search . '%')
+                ->orWhere('deskripsi', 'like', '%' . $request->search . '%');
         }
+
+        $rsetKategori = $query->paginate(10);
+
+        foreach ($rsetKategori as $item) {
+            $item->kategori = DB::select('SELECT ketKategori(?) AS deskripsi', [$item->kategori])[0]->deskripsi ?? $item->kategori;
+        }
+    
+        return view('v_kategori.index', ['rsetKategori' => $rsetKategori]);
     }
-        /**
+            /**
      * Show the form for creating a new resource.
      */
     public function create()
@@ -44,15 +49,26 @@ class KategoriController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'deskripsi' => 'required|string|max:100|unique:kategori,deskripsi',
-            'kategori' => 'required|in:M,A,BHP,BTHP'
+            'deskripsi' => 'required',
+            'kategori' => 'required'
         ]);        
 
-        Kategori::create([
-            'deskripsi' => $request->deskripsi,
-            'kategori' => $request->kategori
-        ]);
+        try {
+            DB::beginTransaction(); // <= Starting the transaction
 
+            // Insert a new order history
+            DB::table('kategori')->insert([
+                'deskripsi' => $request->deskripsi,
+                'kategori' => $request->kategori,
+            ]);
+
+            DB::commit(); // <= Commit the changes
+        } catch (\Exception $e) {
+            report($e);
+
+            DB::rollBack(); // <= Rollback in case of an exception
+        }
+        
         return redirect()->route('kategori.index')->with('Success', 'Data saved successfully!');
     }
 

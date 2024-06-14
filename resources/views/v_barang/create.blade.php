@@ -44,7 +44,7 @@
 
                             <div class="form-group">
                                 <label class="font-weight-bold">STOK</label>
-                                <input type="text" class="form-control @error('stok') is-invalid @enderror" name="stok" value="{{ old('stok', 0) }}" placeholder="Masukkan Stok">
+                                <input type="text" class="form-control @error('stok') is-invalid @enderror" name="stok" value="{{ old('stok', 0) }}" placeholder="Masukkan Stok" disabled>
 
                                 @error('stok')
                                     <div class="alert alert-danger mt-2">

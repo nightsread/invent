@@ -28,6 +28,12 @@
                             {{ session('success') }}
                         </div>
                     @endif
+
+                    @if(session('error'))
+                        <div class="alert alert-danger">
+                            {{ session('error') }}
+                        </div>
+                    @endif
                     
                 <table class="table table-bordered">
                     <thead>
@@ -46,7 +52,7 @@
                                 <td>{{ $row->id }}</td>
                                 <td>{{ $row->tgl_masuk }}</td>
                                 <td>{{ $row->qty_masuk }}</td>
-                                <td>{{ $row->barang_id }} - {{ $row->barang->merk }}</td>
+                                <td>{{ $row->merk }}</td>
                                 <td class="text-center"> 
                                     <form onsubmit="return confirm('Want to delete this field?');" action="{{ route('barangmasuk.destroy', $row->id) }}" method="POST">
                                         <a href="{{ route('barangmasuk.show', $row->id) }}" class="btn btn-sm btn-dark"><i class="fa fa-eye"></i></a>

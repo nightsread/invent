@@ -8,6 +8,7 @@ use App\Models\BarangMasuk;
 use App\Models\BarangKeluar;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Support\Facades\DB;
 
 class BarangMasukController extends Controller
 {
@@ -16,18 +17,22 @@ class BarangMasukController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->query('search');
-        if ($search) {
-            $barangMasuk = BarangMasuk::where('tgl_masuk', 'like', '%' . $search . '%')
-                                    ->orWhere('qty_masuk', 'like', '%' . $search . '%')
-                                    ->orWhere('barang_id', 'like', '%' . $search . '%')
-                                    ->orWhereHas('barang', function($query) use ($search) {
-                                        $query->where('merk', 'like', '%' . $search . '%');
-                                    })
-                                    ->paginate(10);
-        } else {
-            $barangMasuk = BarangMasuk::paginate(10);
+        $query = DB::table('barangmasuk')
+        ->join('barang', 'barangmasuk.barang_id', '=', 'barang.id')
+        ->select('barangmasuk.*', 'barang.merk', 'barang.seri', 'barang.spesifikasi');
+
+        if ($request->has('search')) {
+            $searchTerm = $request->search;
+            $query->where(function ($query) use ($searchTerm) {
+                $query->where('barangmasuk.tgl_masuk', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('barangmasuk.qty_masuk', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('barang.merk', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('barang.seri', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('barang.spesifikasi', 'like', '%' . $searchTerm . '%');
+            });
         }
+        
+        $barangMasuk = $query->paginate(10);
 
         return view('v_barangmasuk.index', compact('barangMasuk'));
     }
@@ -46,7 +51,7 @@ class BarangMasukController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'tgl_masuk'     => 'required|date',
             'qty_masuk'     => 'required|numeric|min:0',
             'barang_id'     => 'required|exists:barang,id',
@@ -63,12 +68,23 @@ class BarangMasukController extends Controller
             return redirect()->back()->withInput()->withErrors(['tgl_masuk' => 'The entry date cannot after the exit date!']);
         }
 
-        BarangMasuk::create([
-            'tgl_masuk' => $request->tgl_masuk,
-            'qty_masuk' => $request->qty_masuk,
-            'barang_id' => $request->barang_id,
-        ]);
+        try {
+            DB::beginTransaction();
 
+            DB::table('barangmasuk')->insert([
+                'tgl_masuk' => $validatedData['tgl_masuk'],
+                'qty_masuk' => $validatedData['qty_masuk'],
+                'barang_id' => $validatedData['barang_id'],
+            ]);
+
+            DB::commit(); 
+        } catch (\Exception $e) {
+            report($e);
+
+            DB::rollBack();
+            return redirect()->back()->withInput()->withErrors(['error' => 'Failed to save the entry.']);
+        }
+        
         return redirect()->route('barangmasuk.index')->with(['success' => 'Successfully saved!']);
     }
 
@@ -96,14 +112,18 @@ class BarangMasukController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'tgl_masuk'     => 'required|date',
             'qty_masuk'     => 'required|numeric|min:0',
             'barang_id'     => 'required|exists:barang,id',
         ]);
 
-        $tgl_masuk = $request->tgl_masuk;
-        $barang_id = $request->barang_id;
+        $barangMasuk = BarangMasuk::findOrFail($id);
+        $barang = Barang::findOrFail($validatedData['barang_id']);
+
+        $tgl_masuk = $validatedData['tgl_masuk'];
+        $qty_masuk = $validatedData['qty_masuk'];
+        $barang_id = $validatedData['barang_id'];
 
         $afterBKeluar = BarangKeluar::where('barang_id', $barang_id)
             ->where('tgl_keluar', '<', $tgl_masuk)
@@ -113,13 +133,21 @@ class BarangMasukController extends Controller
             return redirect()->back()->withInput()->withErrors(['tgl_masuk' => 'The entry date cannot after the exit date!']);
         }
 
-        $barangMasuk = BarangMasuk::find($id);
+        try {
+            DB::beginTransaction();
 
-        $barangMasuk->update([
-            'tgl_masuk' => $request->tgl_masuk,
-            'qty_masuk' => $request->qty_masuk,
-            'barang_id' => $request->barang_id,
-        ]);
+            $barangMasuk->update([
+                'tgl_masuk' => $tgl_masuk,
+                'qty_masuk' => $qty_masuk,
+                'barang_id' => $barang_id,
+            ]);
+
+            DB::commit();
+        } catch (\Exception $e) {
+            report($e);
+            DB::rollBack();
+            return redirect()->back()->withInput()->withErrors(['error' => 'Failed to update the entry.']);
+        }
 
         return redirect()->route('barangmasuk.index')->with(['success' => 'Successfully modified!']);
     }
