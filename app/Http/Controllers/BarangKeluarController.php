@@ -90,10 +90,10 @@ class BarangKeluarController extends Controller
             report($e);
     
             DB::rollBack(); 
-            return redirect()->back()->withErrors(['error' => 'An error occurred while saving the data']);
+            return redirect()->back()->withErrors(['Gagal' => 'An error occurred while saving the data']);
         }
     
-        return redirect()->route('barangkeluar.index')->with(['success' => 'Successfully saved!']);
+        return redirect()->route('barangkeluar.index')->with(['Success' => 'Successfully saved!']);
     }
     
     /**
@@ -120,14 +120,14 @@ class BarangKeluarController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        $barangKeluar = BarangKeluar::find($id);
+        $barang = Barang::find($request->barang_id);
+
         $request->validate([
             'tgl_keluar'   => 'required|date',
             'qty_keluar'   => 'required|numeric|min:1',
             'barang_id'    => 'required|exists:barang,id',
         ]);
-
-        $tgl_keluar = $request->tgl_keluar;
-        $barang_id = $request->barang_id;
 
         $beforeBMasuk = BarangMasuk::where('barang_id', $barang_id)
         ->where('tgl_masuk', '>', $tgl_keluar)
@@ -141,7 +141,6 @@ class BarangKeluarController extends Controller
             return redirect()->back()->withInput()->withErrors(['qty_keluar' => 'The quantity exceeds existing stock items!']);
         }
 
-        $barangKeluar = BarangKeluar::find($id);
 
         $barangKeluar->update([
             'tgl_keluar' => $request->tgl_keluar,
@@ -149,7 +148,7 @@ class BarangKeluarController extends Controller
             'barang_id' => $request->barang_id,
         ]);
 
-        return redirect()->route('barangkeluar.index')->with(['success' => 'Successfully modified!']);
+        return redirect()->route('barangkeluar.index')->with(['Success' => 'Successfully modified!']);
     }
 
     /**
@@ -159,6 +158,6 @@ class BarangKeluarController extends Controller
     {
         $barangKeluar = BarangKeluar::find($id);
         $barangKeluar->delete();
-        return redirect()->route('barangkeluar.index')->with(['success' => 'Successfully deleted!']);
+        return redirect()->route('barangkeluar.index')->with(['Success' => 'Successfully deleted!']);
     }
 }

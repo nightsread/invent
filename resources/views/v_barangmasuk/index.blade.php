@@ -23,15 +23,15 @@
                         </div>
                     </div>
 
-                    @if(session('success'))
+                    @if(session('Success'))
                         <div class="alert alert-success">
-                            {{ session('success') }}
+                            {{ session('Success') }}
                         </div>
                     @endif
 
-                    @if(session('error'))
+                    @if(session('Gagal'))
                         <div class="alert alert-danger">
-                            {{ session('error') }}
+                            {{ session('Gagal') }}
                         </div>
                     @endif
                     

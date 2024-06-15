@@ -57,17 +57,6 @@ class BarangMasukController extends Controller
             'barang_id'     => 'required|exists:barang,id',
         ]);
 
-        $tgl_masuk = $request->tgl_masuk;
-        $barang_id = $request->barang_id;
-
-        $afterBKeluar = BarangKeluar::where('barang_id', $barang_id)
-            ->where('tgl_keluar', '<', $tgl_masuk)
-            ->exists();
-
-        if ($afterBKeluar) {
-            return redirect()->back()->withInput()->withErrors(['tgl_masuk' => 'The entry date cannot after the exit date!']);
-        }
-
         try {
             DB::beginTransaction();
 
@@ -82,10 +71,10 @@ class BarangMasukController extends Controller
             report($e);
 
             DB::rollBack();
-            return redirect()->back()->withInput()->withErrors(['error' => 'Failed to save the entry.']);
+            return redirect()->back()->withInput()->withErrors(['Gagal' => 'Failed to save the entry.']);
         }
         
-        return redirect()->route('barangmasuk.index')->with(['success' => 'Successfully saved!']);
+        return redirect()->route('barangmasuk.index')->with(['Success' => 'Successfully saved!']);
     }
 
     /**
@@ -121,35 +110,7 @@ class BarangMasukController extends Controller
         $barangMasuk = BarangMasuk::findOrFail($id);
         $barang = Barang::findOrFail($validatedData['barang_id']);
 
-        $tgl_masuk = $validatedData['tgl_masuk'];
-        $qty_masuk = $validatedData['qty_masuk'];
-        $barang_id = $validatedData['barang_id'];
-
-        $afterBKeluar = BarangKeluar::where('barang_id', $barang_id)
-            ->where('tgl_keluar', '<', $tgl_masuk)
-            ->exists();
-
-        if ($afterBKeluar) {
-            return redirect()->back()->withInput()->withErrors(['tgl_masuk' => 'The entry date cannot after the exit date!']);
-        }
-
-        try {
-            DB::beginTransaction();
-
-            $barangMasuk->update([
-                'tgl_masuk' => $tgl_masuk,
-                'qty_masuk' => $qty_masuk,
-                'barang_id' => $barang_id,
-            ]);
-
-            DB::commit();
-        } catch (\Exception $e) {
-            report($e);
-            DB::rollBack();
-            return redirect()->back()->withInput()->withErrors(['error' => 'Failed to update the entry.']);
-        }
-
-        return redirect()->route('barangmasuk.index')->with(['success' => 'Successfully modified!']);
+        return redirect()->route('barangmasuk.index')->with(['Success' => 'Successfully modified!']);
     }
 
     /**
@@ -158,8 +119,17 @@ class BarangMasukController extends Controller
     public function destroy(string $id)
     {
         $barangMasuk = BarangMasuk::find($id);
+
+        $barangKeluarCount = BarangKeluar::where('barang_id', $barangMasuk->barang_id)
+                                        ->where('tgl_keluar', '>=', $barangMasuk->tgl_masuk)
+                                        ->count();
+
+        if ($barangKeluarCount > 0) {
+        return redirect()->route('barangmasuk.index')->with(['Gagal' => 'Data tidak dapat dihapus karena sudah ada barang keluar yang terkait!']);
+        }
+
         $barangMasuk->delete();
         
-        return redirect()->route('barangmasuk.index')->with(['success' => 'Successfully deleted!']);
+        return redirect()->route('barangmasuk.index')->with(['Success' => 'Successfully deleted!']);
     }
 }

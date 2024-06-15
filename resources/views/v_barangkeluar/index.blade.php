@@ -23,12 +23,17 @@
                         </div>
                     </div>
 
-                    @if(session('success'))
+                    @if(session('Success'))
                         <div class="alert alert-success">
-                            {{ session('success') }}
+                            {{ session('Success') }}
                         </div>
                     @endif
 
+                    @if(session('Gagal'))
+                        <div class="alert alert-danger">
+                            {{ session('Gagal') }}
+                        </div>
+                    @endif
 
                 <table class="table table-bordered">
                     <thead>

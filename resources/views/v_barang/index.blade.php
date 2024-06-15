@@ -55,7 +55,7 @@
                                 <td>{{ $rowbarang->seri  }}</td>
                                 <td>{{ $rowbarang->spesifikasi  }}</td>
                                 <td>{{ $rowbarang->stok  }}</td> 
-                                <td>{{ $rowbarang->kategori_deskripsi  }}</td>
+                                <td>{{ $rowbarang->kategori->deskripsi }}</td>
                                 <td class="text-center"> 
                                     <form onsubmit="return confirm('Want to delete this field?');" action="{{ route('barang.destroy', $rowbarang->id) }}" method="POST">
                                         <a href="{{ route('barang.show', $rowbarang->id) }}" class="btn btn-sm btn-dark"><i class="fa fa-eye"></i></a>

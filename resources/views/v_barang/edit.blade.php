@@ -55,11 +55,11 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="font-weight-bold">Kategori</label>
+                                <label class="font-weight-bold">KATEGORI</label>
                                 <select class="form-control @error('kategori_id') is-invalid @enderror" name="kategori_id">
                                     <option value="">Pilih Kategori</option>
-                                    @foreach($rsetKategori as $kategori)
-                                        <option value="{{ $kategori->id }}" {{ old('kategori_id', $rsetBarang->kategori_id) == $kategori->id ? 'selected' : '' }}>{{ $kategori->deskripsi }}</option>
+                                    @foreach($rsetKategori as $rowkategori)
+                                        <option value="{{ $rowkategori->id }}" {{ $rsetBarang->kategori_id == $rowkategori->id ? 'selected' : '' }}>{{ $rowkategori->deskripsi }}</option>
                                     @endforeach
                                 </select>
 
@@ -68,8 +68,7 @@
                                         {{ $message }}
                                     </div>
                                 @enderror
-                            </div>
-                           
+                            </div>                           
 
                             <button type="submit" class="btn btn-md btn-primary">SIMPAN</button>
                             <button type="reset" class="btn btn-md btn-warning">RESET</button>
