@@ -9,7 +9,6 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BarangMasukController;
 use App\Http\Controllers\BarangKeluarController;
 
-
 Route::resource('barang',BarangController::class)->middleware('auth');
 Route::resource('kategori',KategoriController::class)->middleware('auth');
 Route::resource('barangkeluar',BarangKeluarController::class)->middleware('auth');

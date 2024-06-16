@@ -125,7 +125,7 @@ class BarangMasukController extends Controller
                                         ->count();
 
         if ($barangKeluarCount > 0) {
-        return redirect()->route('barangmasuk.index')->with(['Gagal' => 'Data tidak dapat dihapus karena sudah ada barang keluar yang terkait!']);
+        return redirect()->route('barangmasuk.index')->with(['Gagal' => 'Failed, data related!']);
         }
 
         $barangMasuk->delete();
